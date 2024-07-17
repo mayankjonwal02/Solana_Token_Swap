@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Swap</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    button[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    #response {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    #loading {
+      position: fixed; /* Keep the loading spinner centered */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); /* Center the spinner horizontally and vertically */
+      display: none; /* Initially hidden */
+      text-align: center;
+      z-index: 999; /* Ensure the spinner stays on top of other elements */
+    }
+
+    #loading img {
+      width: 50px;
+      height: 50px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Token Swap</h1>
+  <form id="swapForm">
+    <div class="form-group">
+      <label for="tokenIn">Input Token:</label>
+      <input type="text" id="tokenIn" name="tokenIn" placeholder="SOL, ETH, etc." required>
+    </div>
+    <div class="form-group">
+      <label for="tokenOut">Output Token:</label>
+      <input type="text" id="tokenOut" name="tokenOut" placeholder="RAY, USDC, etc." required>
+    </div>
+    <div class="form-group">
+      <label for="amountIn">Input Amount:</label>
+      <input type="number" min="0.01" step="0.01" id="amountIn" name="amountIn" placeholder="1.23" required>
+    </div>
+    <button type="submit">Swap</button>
+  </form>
+  <div id="response"></div>
+  <div id="loading">
+    <img src="loading.gif" alt="Loading..." />
+  </div>
+  <script>
+    const swapForm = document.getElementById('swapForm');
+    const responseEl = document.getElementById('response');
+    const loadingEl = document.getElementById('loading');
+
+    swapForm.addEventListener('submit', async (event) => {
+      event.preventDefault(); // Prevent default form submission
+
+      loadingEl.style.display = 'block'; // Show loading indicator
+
+      const tokenIn = document.getElementById('tokenIn').value;
+      const tokenOut = document.getElementById('tokenOut').value;
+      const amountIn = document.getElementById('amountIn').value;
+
+      const response = await fetch('/swap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tokenIn, tokenOut, amountIn }),
+      });
+
+      const data = await response.json();
+
+      loadingEl.style.display = 'none'; // Hide loading indicator
+
+      if (data.error) {
+        responseEl.textContent = `Error: ${data.error}`;
+        responseEl.style.color = 'red';
+      } else {
+        responseEl.textContent = `Estimated ${tokenOut} amount for ${amountIn} ${tokenIn}: ${data.estimatedTokenBValue}`;
+        responseEl.style.color = 'green';
+      }
+    });
+  </script>
+</body>
+</html>
